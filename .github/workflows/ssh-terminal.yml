@@ -1,0 +1,16 @@
+name: 2. Native SSH Mac Terminal
+
+on:
+  workflow_dispatch: # 允许随时手动点击启动
+
+jobs:
+  ssh-access:
+    runs-on: ubuntu-latest # 依然使用微软千兆大带宽虚拟机
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Tmate SSH Session
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 360 # 强制保持最长 6 小时活跃时间
