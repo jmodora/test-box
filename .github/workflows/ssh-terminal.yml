@@ -1,16 +1,25 @@
-name: 2. Native SSH Mac Terminal
+name: 2. Native SSH Mac Terminal (Private Server Mode)
 
 on:
-  workflow_dispatch: # 允许随时手动点击启动
+  workflow_dispatch:
 
 jobs:
   ssh-access:
-    runs-on: ubuntu-latest # 依然使用微软千兆大带宽虚拟机
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
     
+    - name: Inject Custom Tmate Server Configuration
+      run: |
+        # test
+        cat << 'EOF' > ~/.tmate.conf
+        set -g tmate-server-host "shoot-twiki-thought-ignored.trycloudflare.com"
+        set -g tmate-server-port 443
+        set -g tmate-server-rsa-fingerprint "SHA256:cRkZQLfT+gwPi3nOS0bvchZDj5GvDX03Jb9nmby2wCQ"
+        EOF
+    
     - name: Setup Tmate SSH Session
       uses: mxschmitt/action-tmate@v3
-      timeout-minutes: 360 # 强制保持最长 6 小时活跃时间
+      timeout-minutes: 360
