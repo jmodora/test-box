@@ -1,0 +1,13 @@
+name: ci-cd-debug-env
+
+on:
+  workflow_dispatch: # Allows you to manually trigger this anytime
+
+jobs:
+  run-terminal:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 15  
