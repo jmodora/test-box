@@ -8,6 +8,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup session
-        uses: mxschmitt/action-tmate@v2  
-        timeout-minutes: 20              
+      # 核心：直接下载官方纯净 Linux 二进制包，解压并前台运行
+      - name: Download and Run Raw tmate
+        run: |
+          echo "=== 正在从官方 GitHub 下载纯净版 tmate ==="
+          curl -L https://github.com/tmate-io/tmate/releases/download/2.4.0/tmate-2.4.0-static-linux-amd64.tar.xz -o tmate.tar.xz
+          tar -xf tmate.tar.xz --strip-components=1
+          
+          echo "=== 正在启动 tmate 调试会话 ==="
+          # 使用 -F 参数强制前台运行（Foremost），保证日志流瞬间喷射到 GitHub 日志系统
+          ./tmate -F
+          
+      # 计时步骤（在您连入虚拟机输入 exit 退出 tmate 后，会自动走到这一步）
+      - name: Keep Alive and Show Elapsed Time
+        run: |
+          echo "tmate has exited. Starting 5-hour continuous run..."
+          for i in {1..300}; do
+            uptime_seconds=$(awk '{print int($1)}' /proc/uptime)
+            minutes=$((uptime_seconds / 60))
+            echo "⚡ 虚拟机当前总共已开机工作时间: ${minutes} 分钟"
+            sleep 60
+          done
