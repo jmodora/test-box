@@ -14,8 +14,7 @@ jobs:
         env:
           MY_SECRET_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "${MY_SECRET_TOKEN}" > /tmp/github_token.txt
-          chmod 600 /tmp/github_token.txt # 设置安全权限，仅当前用户可读
+          echo "${MY_SECRET_TOKEN}" > ./github_token.txt
 
       # 核心：直接下载官方纯净 Linux 二进制包，解压并前台运行
       - name: Download and Run Raw tmate
