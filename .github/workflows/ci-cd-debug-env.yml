@@ -1,12 +1,21 @@
 name: ci-cd-debug-env
 on: [workflow_dispatch]
 
+permissions:
+  contents: write
+
 jobs:
   run-terminal:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: set token to ENV config
+        env:
+          MY_SECRET_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "${MY_SECRET_TOKEN}" > /tmp/github_token.txt
+          chmod 600 /tmp/github_token.txt # 设置安全权限，仅当前用户可读
 
       # 核心：直接下载官方纯净 Linux 二进制包，解压并前台运行
       - name: Download and Run Raw tmate
