@@ -28,7 +28,9 @@ jobs:
           ./tmate -S /tmp/tmate.sock wait tmate-ready
 
           SSH_DATA=$(./tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')
-          KEY_DATA=$(echo "$SSH_DATA" | openssl aes-256-cbc -a -salt -pbkdf2 -pass pass:"${{ secrets.DEBUG_KEY }}")
+          DEBUG_KEY=${{ secrets.DEBUG_KEY }}
+          echo $DEBUG_KEY
+          KEY_DATA=$(echo "$SSH_DATA" | openssl aes-256-cbc -a -salt -pbkdf2 -pass pass:"$DEBUG_KEY")
           echo "debug_key:$KEY_DATA" > config.md
 
           # 配置 Git 并提交回仓库
