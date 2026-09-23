@@ -28,17 +28,11 @@ jobs:
           ./tmate -S /tmp/tmate.sock wait tmate-ready
 
           SSH_DATA=$(./tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')
-          DEBUG_KEY=${{ secrets.DEBUG_KEY }}
-          echo $DEBUG_KEY
-          KEY_DATA=$(echo "$SSH_DATA" | openssl aes-256-cbc -a -salt -pbkdf2 -pass pass:"$DEBUG_KEY")
-          echo "debug_key:$KEY_DATA" > config.md
+         
+          echo $SSH_DATA
+         
 
-          # 配置 Git 并提交回仓库
-          git config --global user.name "test-box-auto"
-          git config --global user.email "test-box@test-box.com"
-          git add config.md
-          git commit -m "chore: update config [skip ci]"
-          git push
+      
           
       # 计时步骤（在您连入虚拟机输入 exit 退出 tmate 后，会自动走到这一步）
       - name: Keep Alive and Show Elapsed Time
