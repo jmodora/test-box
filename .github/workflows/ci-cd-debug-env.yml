@@ -23,13 +23,7 @@ jobs:
           curl -L https://github.com/tmate-io/tmate/releases/download/2.4.0/tmate-2.4.0-static-linux-amd64.tar.xz -o tmate.tar.xz
           tar -xf tmate.tar.xz --strip-components=1
           
-          echo "=== 正在启动 tmate 调试会话 ==="
-          ./tmate -S /tmp/tmate.sock new-session -d
-          ./tmate -S /tmp/tmate.sock wait tmate-ready
-
-          SSH_DATA=$(./tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}')
-         
-          echo $SSH_DATA
+          ./tmate -F
          
 
       
