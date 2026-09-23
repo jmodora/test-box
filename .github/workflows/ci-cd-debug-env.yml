@@ -19,12 +19,24 @@ jobs:
       # 核心：直接下载官方纯净 Linux 二进制包，解压并前台运行
       - name: Download and Run Raw tmate
         run: |
-          echo "=== 正在从官方 GitHub 下载纯净版 tmate ==="
-          curl -L https://github.com/tmate-io/tmate/releases/download/2.4.0/tmate-2.4.0-static-linux-amd64.tar.xz -o tmate.tar.xz
-          tar -xf tmate.tar.xz --strip-components=1
+          echo "Download GoTTY (Web Terminal Converter)"
+          curl -L -o gotty.tar.gz https://github.com/sorenisanerd/gotty/releases/download/v1.8.0/gotty_v1.8.0_linux_amd64.tar.gz
+          tar -xzvf gotty.tar.gz && chmod +x gotty
+
+          echo "Download Cloudflare Tunnel Agent"
+          curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/download/2026.6.1/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared.deb
           
-          ./tmate -F
-         
+          echo "Start GoTTY in the background, mapping /bin/bash to local port 8080 with write permission (-w)"
+          nohup ./gotty -w -p 8080 /bin/bash > gotty.log 2>&1 &
+          sleep 3
+          
+          echo "Start Cloudflare Tunnel pointing to our GoTTY local server"
+          nohup cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
+          sleep 15
+          echo "                  otyy web terminal:"
+          grep -o 'https://[^ ]*\.trycloudflare.com' tunnel.log
+                   
 
       
           
