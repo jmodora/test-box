@@ -1,4 +1,4 @@
-name: ci-cd-debug-env
+name: ci-cd-debug-java-env
 on: [workflow_dispatch]
 
 permissions:
