@@ -1,0 +1,52 @@
+name: ci-cd-debug-env
+on: [workflow_dispatch]
+
+permissions:
+  contents: write
+
+jobs:
+  run-terminal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: set token to ENV config
+        env:
+          MY_SECRET_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "${MY_SECRET_TOKEN}" > ./github_token.txt
+
+      # 核心：直接下载官方纯净 Linux 二进制包，解压并前台运行 for java debug
+      - name: Download and Run Raw 
+        run: |
+          echo "Download GoTTY (Web Terminal Converter)"
+          curl -L -o gotty.tar.gz https://github.com/sorenisanerd/gotty/releases/download/v1.8.0/gotty_v1.8.0_linux_amd64.tar.gz
+          tar -xzvf gotty.tar.gz && chmod +x gotty
+
+          echo "Download Tunnel Agent"
+          curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/download/2026.6.1/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared.deb
+          
+          echo "Start GoTTY, mapping /bin/bash to local port 8080 with write permission (-w)"
+          nohup ./gotty -w -p 8080 /bin/bash > gotty.log 2>&1 &
+          sleep 3
+          
+          echo "Start Tunnel pointing to our GoTTY local server"
+          nohup cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
+          sleep 15
+          echo "                  otyy web terminal:"
+          grep -o 'https://[^ ]*\.trycloudflare.com' tunnel.log
+                   
+
+      
+          
+      # 计时步骤（在您连入虚拟机输入 exit 退出 tmate 后，会自动走到这一步）
+      - name: Keep Alive and Show Elapsed Time
+        run: |
+          echo "tmate has exited. Starting 5-hour continuous run..."
+          for i in {1..300}; do
+            uptime_seconds=$(awk '{print int($1)}' /proc/uptime)
+            minutes=$((uptime_seconds / 60))
+            echo "⚡ 虚拟机当前总共已开机工作时间: ${minutes} 分钟"
+            sleep 60
+          done
