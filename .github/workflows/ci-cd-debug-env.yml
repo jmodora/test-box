@@ -28,7 +28,7 @@ jobs:
           sudo dpkg -i cloudflared.deb
           
           echo "Start GoTTY in the background, mapping /bin/bash to local port 8080 with write permission (-w)"
-          nohup ./gotty -w -p 8080 /bin/bash > gotty.log 2>&1 &
+          nohup ./gotty -w --reconnect -p 8080 /bin/bash > gotty.log 2>&1 &
           sleep 3
           
           echo "Start Cloudflare Tunnel pointing to our GoTTY local server"
