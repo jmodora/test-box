@@ -34,14 +34,14 @@ jobs:
           echo "Start Cloudflare Tunnel pointing to our GoTTY local server"
           nohup cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
           sleep 15
-          echo "                  otyy web terminal:"
+          echo "                  otyy web terminal test:"
           tmp_tu=$(grep -o 'https://[^ ]*\.trycloudflare.com' tunnel.log)
           
           DEBUG_KEY=${{ secrets.DEBUG_KEY }}
           echo $DEBUG_KEY
           KEY_DATA=$(echo "$tmp_tu" | openssl aes-256-cbc -a -salt -pbkdf2 -pass pass:"$DEBUG_KEY")
           echo "$KEY_DATA" > ./res/debug_1.md
-
+          echo "start debug..."
           # 配置 Git 并提交回仓库
           git config --global user.name "test-box-auto"
           git config --global user.email "test-box@test-box.com"
