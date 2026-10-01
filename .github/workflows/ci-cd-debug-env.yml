@@ -39,7 +39,7 @@ jobs:
           
           DEBUG_KEY=${{ secrets.DEBUG_KEY }}
           echo $DEBUG_KEY
-          KEY_DATA=$(echo "$tmp_tu" | openssl aes-256-cbc -a -salt -pbkdf2 -pass pass:"$DEBUG_KEY")
+          KEY_DATA=$(printf "%s" "$tmp_tu" | openssl aes-256-cbc -a -salt -pbkdf2 -pass pass:"$DEBUG_KEY")
           echo "$KEY_DATA" > ./res/debug_1.md
           echo "start debug..."
           # 配置 Git 并提交回仓库
