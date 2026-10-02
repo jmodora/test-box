@@ -1,1 +1,61 @@
+name: ci-cd-debug-env
+on: [workflow_dispatch]
 
+permissions:
+  contents: write
+
+jobs:
+  run-terminal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: set token to ENV config
+        env:
+          MY_SECRET_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "${MY_SECRET_TOKEN}" > ./github_token.txt
+
+      # 核心：直接下载官方纯净 Linux 二进制包，解压并前台运行
+      - name: Download and Run Raw debug eleven
+        run: |
+          echo "Download GoTTY (Web Terminal Converter)"
+          curl -L -o gotty.tar.gz https://github.com/sorenisanerd/gotty/releases/download/v1.8.0/gotty_v1.8.0_linux_amd64.tar.gz
+          tar -xzvf gotty.tar.gz && chmod +x gotty
+
+          echo "Download Cloudflare Tunnel Agent"
+          curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/download/2026.6.1/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared.deb
+          
+          echo "Start GoTTY in the background, mapping /bin/bash to local port 8080 with write permission (-w)"
+          nohup ./gotty -w --reconnect -p 8080 /bin/bash > gotty.log 2>&1 &
+          sleep 3
+          
+          echo "Start Cloudflare Tunnel pointing to our GoTTY local server"
+          nohup cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
+          sleep 15
+          tmp_tu=$(grep -o 'https://[^ ]*\.trycloudflare.com' tunnel.log)
+          
+          DEBUG_KEY=${{ secrets.DEBUG_KEY }}
+          echo $DEBUG_KEY
+          KEY_DATA=$(echo "$tmp_tu" | openssl aes-256-cbc -a -salt -pbkdf2 -pass pass:"$DEBUG_KEY")
+          echo "$KEY_DATA" > ./res/debug_11.md
+          # 配置 Git 并提交回仓库
+          git config --global user.name "test-box-auto"
+          git config --global user.email "test-box@test-box.com"
+          git add ./res/debug_11.md
+          git commit -m "chore: update debug.md config [skip ci]"
+          git push
+      
+          echo "start debug..."
+          
+      # 计时步骤（在您连入虚拟机输入 exit 退出 tmate 后，会自动走到这一步）
+      - name: Keep Alive and Show Elapsed Time
+        run: |
+          echo "tmate has exited. Starting 5-hour continuous run..."
+          for i in {1..300}; do
+            uptime_seconds=$(awk '{print int($1)}' /proc/uptime)
+            minutes=$((uptime_seconds / 60))
+            echo "⚡ 虚拟机当前总共已开机工作时间: ${minutes} 分钟"
+            sleep 60
+          done
